@@ -170,12 +170,20 @@ func ConnectDefaultCluster(redisCluster *redisc.Cluster) error {
 	return ConnectCluster(DefaultConnName, redisCluster)
 }
 
+func GetDefaultConnPool() (RedisPool, error) {
+	return GetConnPool(DefaultConnName)
+}
+
 func GetConnPool(connName string) (RedisPool, error) {
 	redisPool, ok := redisPools.Load(connName)
 	if !ok {
 		return nil, ErrRedisConnPoolNotRegistered
 	}
 	return redisPool.(RedisPool), nil
+}
+
+func GetDefaultConn() (redis.Conn, error) {
+	return GetConn(DefaultConnName)
 }
 
 func GetConn(connName string) (redis.Conn, error) {
