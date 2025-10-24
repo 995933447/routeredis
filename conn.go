@@ -49,7 +49,11 @@ func (r *RedisCluster) Get() redis.Conn {
 
 var redisPools sync.Map
 
-func ConnectByConf(connName string, conf *ConnConf) {
+func ConnectByConf(connName string, conf *ConnConf) error {
+	if conf.EnabledCluster {
+		return ConnectClusterByConf(connName, conf)
+	}
+
 	pool := &redis.Pool{
 		MaxIdle:         conf.IdleCount,
 		MaxActive:       conf.MaxConnPoolSize, //when zero,there's no limit. https://godoc.org/github.com/garyburd/redigo/redis#Pool
@@ -80,10 +84,12 @@ func ConnectByConf(connName string, conf *ConnConf) {
 	}
 
 	Connect(connName, pool)
+
+	return nil
 }
 
-func ConnectDefaultByConf(conf *ConnConf) {
-	ConnectByConf(DefaultConnName, conf)
+func ConnectDefaultByConf(conf *ConnConf) error {
+	return ConnectByConf(DefaultConnName, conf)
 }
 
 func ConnectClusterByConf(connName string, conf *ConnConf) error {
