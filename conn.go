@@ -193,3 +193,66 @@ func GetConn(connName string) (redis.Conn, error) {
 	}
 	return pool.Get(), nil
 }
+
+var _ RedisPool = (*DynamicConnPool)(nil)
+
+func NewDynamicConnPool(connName string) (*DynamicConnPool, error) {
+	if _, err := GetConnPool(connName); err != nil {
+		return nil, err
+	}
+
+	return &DynamicConnPool{
+		connName: connName,
+	}, nil
+}
+
+type DynamicConnPool struct {
+	connName string
+}
+
+func (d *DynamicConnPool) Get() redis.Conn {
+	conn, err := GetConn(d.connName)
+	if err != nil {
+		return NewErrConn(err)
+	}
+
+	return conn
+}
+
+func (d *DynamicConnPool) Close() error {
+	return nil
+}
+
+var _ redis.Conn = (*ErrRedisConn)(nil)
+
+func NewErrConn(err error) *ErrRedisConn {
+	return &ErrRedisConn{err}
+}
+
+type ErrRedisConn struct {
+	err error
+}
+
+func (c *ErrRedisConn) Close() error {
+	return c.err
+}
+
+func (c *ErrRedisConn) Err() error {
+	return c.err
+}
+
+func (c *ErrRedisConn) Do(commandName string, args ...interface{}) (reply interface{}, err error) {
+	return nil, c.err
+}
+
+func (c *ErrRedisConn) Send(commandName string, args ...interface{}) error {
+	return c.err
+}
+
+func (c *ErrRedisConn) Flush() error {
+	return c.err
+}
+
+func (c *ErrRedisConn) Receive() (reply interface{}, err error) {
+	return nil, c.err
+}

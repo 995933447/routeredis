@@ -1,6 +1,7 @@
 package routeredis
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gomodule/redigo/redis"
@@ -38,6 +39,14 @@ func InitRedis() {
 	})
 
 	RegisterKeyRoute(KeyRouteSess, ConnNameUser)
+
+	pool, err := NewDynamicConnPool(ConnNameUser)
+	if err != nil {
+		panic(err)
+	}
+
+	conn := pool.Get()
+	fmt.Println(conn)
 }
 
 func getKey(userId int64) *Key {
