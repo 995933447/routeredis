@@ -220,7 +220,12 @@ func (d *DynamicConnPool) Get() redis.Conn {
 }
 
 func (d *DynamicConnPool) Close() error {
-	return nil
+	pool, err := GetConnPool(d.connName)
+	if err != nil {
+		return err
+	}
+
+	return pool.Close()
 }
 
 var _ redis.Conn = (*ErrRedisConn)(nil)
