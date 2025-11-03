@@ -6,7 +6,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-type OnCmdDoneFunc func(execCmdWay string, ttl *TTL, cost time.Duration, cmd string, key *Key, args ...any)
+type OnCmdDoneFunc func(execCmdWay string, ttl *TTL, cost time.Duration, cmd string, key *Key, err error, args ...any)
 
 var OnCmdDone OnCmdDoneFunc
 
@@ -68,7 +68,7 @@ func DoCmdWithTTL(ttl *TTL, cmd string, key *Key, args ...any) (res any, err err
 
 	if OnCmdDone != nil {
 		start := time.Now()
-		defer OnCmdDone("DoCmdWithTTL", ttl, time.Since(start), cmd, key, args...)
+		defer OnCmdDone("DoCmdWithTTL", ttl, time.Since(start), cmd, key, err, args...)
 	}
 
 	if err = conn.Err(); err != nil {
@@ -85,7 +85,7 @@ func DoCmdWithTTL(ttl *TTL, cmd string, key *Key, args ...any) (res any, err err
 
 func doCmdWithTTL(conn redis.Conn, ttl *TTL, cmd string, key string, args ...any) (any, error) {
 	defer conn.Close()
-	
+
 	reply, err := conn.Do(cmd, append([]any{key}, args...)...)
 	if err == nil {
 		if ttl != nil && ttl.TTL > 0 {
@@ -116,7 +116,7 @@ func SendCmdWithTTL(ttl *TTL, cmd string, key *Key, args ...any) error {
 
 	if OnCmdDone != nil {
 		start := time.Now()
-		defer OnCmdDone("SendCmdWithTTL", ttl, time.Since(start), cmd, key, args...)
+		defer OnCmdDone("SendCmdWithTTL", ttl, time.Since(start), cmd, key, err, args...)
 	}
 
 	if err := conn.Err(); err != nil {
