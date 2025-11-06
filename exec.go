@@ -68,7 +68,9 @@ func DoCmdWithTTL(ttl *TTL, cmd string, key *Key, args ...any) (res any, err err
 
 	if OnCmdDone != nil {
 		start := time.Now()
-		defer OnCmdDone("DoCmdWithTTL", ttl, time.Since(start), cmd, key, err, args...)
+		defer func() {
+			OnCmdDone("DoCmdWithTTL", ttl, time.Since(start), cmd, key, err, args...)
+		}()
 	}
 
 	if err = conn.Err(); err != nil {
@@ -116,7 +118,9 @@ func SendCmdWithTTL(ttl *TTL, cmd string, key *Key, args ...any) error {
 
 	if OnCmdDone != nil {
 		start := time.Now()
-		defer OnCmdDone("SendCmdWithTTL", ttl, time.Since(start), cmd, key, err, args...)
+		defer func() {
+			OnCmdDone("SendCmdWithTTL", ttl, time.Since(start), cmd, key, err, args...)
+		}()
 	}
 
 	if err := conn.Err(); err != nil {
